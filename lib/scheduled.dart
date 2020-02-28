@@ -1,0 +1,3 @@
+class SchedulePage extends StatelessWidget {
+
+}
