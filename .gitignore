@@ -46,3 +46,5 @@ __pycache__
 #*#
 android/app/google-services.json
 ios/
+
+gen/

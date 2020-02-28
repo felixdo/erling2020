@@ -4,44 +4,44 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import './home.dart';
 
-final GoogleSignIn _googleSignIn = GoogleSignIn();
-final FirebaseAuth _auth = FirebaseAuth.instance;
-
 class SignInPage extends StatelessWidget {
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<FirebaseUser> _handleSignIn() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    final FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
-    print("signed in " + user.displayName);
+    final FirebaseUser user =
+        (await _auth.signInWithCredential(credential)).user;
     return user;
   }
 
   /// Normally the signin buttons should be contained in the SignInPage
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(50, 50, 50, 1.0),
-      body: Center(
+    return Container(
+      decoration: BoxDecoration(color: Colors.white),
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SignInButton(
-              Buttons.Google,
-              onPressed: () =>
-                  _handleSignIn().then(
-                          (user) => Navigator.pushReplacementNamed(context, "/matches", arguments: user)
-                  )
-              )
-            ],
-        ),
-      ),
+             Image(image: AssetImage("assets/login.jpeg")),
+             SizedBox(height: 20),
+             SignInButton(Buttons.Google,
+                onPressed: () => _handleSignIn().then((user) =>
+                    Navigator.pushReplacementNamed(context, "/matches",
+                     arguments: user)),
+             ),
+          ],
+        )
+      )
     );
   }
 }

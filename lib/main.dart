@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Machs nochmal Erling - 2020',
       theme: ThemeData(
         primarySwatch: Colors.yellow,
+        canvasColor: Colors.white
       ),
       initialRoute: '/',
       routes: {
