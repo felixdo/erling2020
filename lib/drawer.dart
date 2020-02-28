@@ -26,15 +26,17 @@ class ErlingDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.message),
               title: Text('Standings'),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StandingsPage()));
+              onTap: () => Navigator.pushNamed(context, "/standings")
             ),
             ListTile(
               leading: Icon(Icons.message),
-              title: Text('History'),
+              title: Text('Matches'),
+              onTap: () => Navigator.pushNamed(context, "/matches"),
             ),
             ListTile(
               leading: Icon(Icons.account_circle),
               title: Text('Upcoming matches'),
+
             ),
             ListTile(
                 leading: Icon(Icons.exit_to_app),
@@ -42,7 +44,7 @@ class ErlingDrawer extends StatelessWidget {
                 onTap: () {
                   FirebaseAuth.instance.signOut();
                   GoogleSignIn().signOut();
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignInPage()));
+                  Navigator.pushReplacementNamed(context, "/");
                 }
             )
           ]

@@ -6,12 +6,11 @@ import 'package:flutter/material.dart';
 
 abstract class HomePage extends StatelessWidget {
 
-  final FirebaseUser user;
-
-  HomePage(this.user);
-
   @override
   Widget build(BuildContext context) {
+
+    final FirebaseUser user = ModalRoute.of(context).settings.arguments;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(user.displayName),
