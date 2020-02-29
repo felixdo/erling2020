@@ -13,7 +13,7 @@ FIREBASE_CONFIG = {
 
 FOOTBALLDATA_CONFIG = {
   "token": os.getenv("FOOTBALL_DATA_TOKEN"),
-  "BL1_SEASON": 2019
+  "BL1_SEASON": "2019"
 }
 
 
