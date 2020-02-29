@@ -10,33 +10,41 @@ settings.configure(my_local_settings)
 
 season=settings.FOOTBALLDATA_CONFIG['BL1_SEASON']
 
-bundesliga1_matches = '/v2/competitions/BL1/matches?season=%s' % season
+competitions=['BL1', 'CL', 'EC']
 
-def prepare_bl_matches(response):
+
+def prepare_matches(response, competition):
     """ removes unwanted data from football-data json """
     matches = response['matches']
     result = {}
     for m in matches:
         matchId = m.pop('id')
+        season = m.pop('season')
+        m['season_id'] = season['id']
+        m['competition'] = competition
         m.pop('odds', None)
-        m.pop('referees', None)
-        stage = m.pop('stage', None)
-        m.pop('season', None)
-        m.pop('group', None)
-        if (m['status'] == 'SCHEDULED'):
+        m.pop('referees')
+        if m['status'] == 'SCHEDULED':
             m.pop('score', None)
-        elif (stage == 'REGULAR_SEASON'):
-            m['score'].pop('duration', None)
-            m['score'].pop('extraTime', None)
-            m['score'].pop('penalties', None)
+        else:
+            score=m['score']
+            if score is not None and score['duration'] == 'REGULAR':
+                score.pop('extraTime', None)
+                score.pop('penalties', None)
+
         result[str(matchId)] = m
     return result
 
+matchlist = {}
 
-response=get_football_data(bundesliga1_matches)
 
-if (response):
-    matchlist=prepare_bl_matches(response)
-    #print (json.dumps(matchlist, indent=4, sort_keys=False))
-    result = set_matches("BL1", season, matchlist)
+for c in competitions:
+    response=get_football_data('/v2/competitions/%s/matches' % c)
+
+    if (response):
+        matchlist.update(prepare_matches(response, c))
+
+    
+result = set_matches(matchlist)
+
 
