@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:erling2020/signin_page.dart';
 
 class ErlingDrawer extends StatelessWidget {
   @override
@@ -26,11 +25,11 @@ class ErlingDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.message),
               title: Text('Standings'),
-              onTap: () => Navigator.pushNamed(context, "/standings")
+              onTap: () {}
             ),
             ListTile(
               leading: Icon(Icons.message),
-              title: Text('Matches'),
+              title: Text('Scheduled Matches'),
               onTap: () => Navigator.pushNamed(context, "/matches"),
             ),
             ListTile(
@@ -42,9 +41,9 @@ class ErlingDrawer extends StatelessWidget {
                 leading: Icon(Icons.exit_to_app),
                 title: Text('Logout'),
                 onTap: () {
+                  // signing out triggers onAuthStateChanged and reloads the app..
                   FirebaseAuth.instance.signOut();
                   GoogleSignIn().signOut();
-                  Navigator.pushReplacementNamed(context, "/");
                 }
             )
           ]

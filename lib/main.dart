@@ -1,9 +1,8 @@
-import 'package:erling2020/signin_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import './home.dart';
 import './matches.dart';
-import 'signin_page.dart';
+import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 void main() => runApp(MyApp());
 
@@ -12,46 +11,52 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Machs nochmal Erling - 2020',
-      theme: ThemeData(
-        primarySwatch: Colors.yellow,
-        canvasColor: Colors.white
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => SplashScreen(),
-        '/matches': (context) => MatchesPage(),
-        '/signin': (context) => SignInPage()
-      }
-    );
+    return MultiProvider(
+      providers: [
+        StreamProvider<FirebaseUser>(
+          create: (_) {
+            return FirebaseAuth.instance.onAuthStateChanged;
+       },
+        )
+      ],
+      child:
+          Consumer<FirebaseUser>(
+            builder: (_, user, __) {
+              if (user != null) {
+                return MaterialApp(
+                    title: 'Machs nochmal Erling - 2020',
+                    theme:
+                    ThemeData(
+                        primarySwatch: Colors.yellow,
+                        canvasColor: Colors.white
+                    ),
+                    initialRoute: '/matches',
+                    routes: {
+                      '/matches': (context) => MatchesPage(),
+                    }
+                );
+              } else {
+                signin();
+                return CircularProgressIndicator();
+              }
+            }
+          )
+      );
     }
-  }
 
-class SplashScreen extends StatefulWidget {
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
+    Future<FirebaseUser> signin() async {
+        GoogleSignIn _googleSignIn = GoogleSignIn();
+        FirebaseAuth _auth = FirebaseAuth.instance;
+        GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+        GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        AuthCredential credential = GoogleAuthProvider.getCredential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken
+        );
+        final FirebaseUser user =
+            (await _auth.signInWithCredential(credential)).user;
+        return user;
+    }
 
-class _SplashScreenState extends State<SplashScreen> {
-
-  Future<FirebaseUser> user;
-
-  @override
-  void initState() {
-    super.initState();
-    FirebaseAuth.instance.currentUser().then ((user) {
-      var route = "/signin";
-      if (user != null) {
-        Navigator.pushReplacementNamed(context, "/matches", arguments: user);
-      } else {
-        Navigator.pushReplacementNamed(context, "/signin");
-      }
-    }).catchError( (error) => Navigator.pushReplacementNamed(context, "/signin"));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CircularProgressIndicator();
-  }
 }

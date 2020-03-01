@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'home.dart';
 import 'match.dart';
-import 'score.dart';
 
 class MatchesPage extends HomePage {
 
@@ -14,7 +13,6 @@ class MatchesPage extends HomePage {
 
   @override
   Widget buildBody(BuildContext context) {
-    Firestore.instance.
     return StreamBuilder(
         stream: Firestore.instance.collection('matches').where('status', isEqualTo: 'SCHEDULED').snapshots(),
         builder: (context, snapshot) {
