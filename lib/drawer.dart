@@ -36,7 +36,7 @@ class ErlingDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.account_circle),
               title: Text('Upcoming matches'),
-
+              onTap: () => Navigator.pushNamed(context, "/upcoming"),
             ),
             ListTile(
                 leading: Icon(Icons.exit_to_app),

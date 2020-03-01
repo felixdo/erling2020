@@ -1,4 +1,5 @@
 import 'package:erling2020/signin_page.dart';
+import 'package:erling2020/upcoming.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import './home.dart';
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => SplashScreen(),
         '/matches': (context) => MatchesPage(),
-        '/signin': (context) => SignInPage()
+        '/signin': (context) => SignInPage(),
+        '/upcoming': (context) => UpcomingPage()
       }
     );
     }
