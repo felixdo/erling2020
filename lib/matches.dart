@@ -68,7 +68,7 @@ class _MatchlistState extends State<Matchlist> {
           .snapshots();
     } else {
       DateTime now = DateTime.now();
-      DateTime _000 = now.subtract(Duration(hours: now.hour, minutes: now.minute, seconds: now.second, microseconds: now.microsecond, milliseconds: now.millisecond));
+      DateTime _000 = new DateTime(now.year, now.month, now.hour);
       DateTime _001 = _000.add(Duration(days: 1));
       return widget.matchCollection.where('utcDate', isGreaterThan: Timestamp.fromDate(_000)).where('ucDate', isLessThan: Timestamp.fromDate(_001)).snapshots();
     }
