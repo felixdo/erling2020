@@ -34,7 +34,7 @@ class Match {
   List _getScore(String phase) {
     if (score != null) {
       if (score.containsKey(phase)) {
-        return [score['phase']['homeTeam'], score[phase]['awayTeam']];
+        return [score[phase]['homeTeam'], score[phase]['awayTeam']];
       }
     }
     return null;
@@ -85,9 +85,10 @@ class MatchWidget extends StatelessWidget {
       alignment: Alignment.center,
       child: Row(
         children: <Widget>[
-          Text(score == null ? "x" : score[0], style: scoreTextStyle),
+          Text(score == null ? "x" : score[0].toString(),
+              style: scoreTextStyle),
           Text(":", style: scoreTextStyle),
-          Text(score == null ? "x" : score[1], style: scoreTextStyle)
+          Text(score == null ? "x" : score[1].toString(), style: scoreTextStyle)
         ],
       ),
     );
