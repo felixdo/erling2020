@@ -3,8 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import './matches.dart';
 import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'model.dart';
 
 void main() => runApp(MyApp());
+
+
+
 
 class MyApp extends StatelessWidget {
 
@@ -16,7 +20,10 @@ class MyApp extends StatelessWidget {
         StreamProvider<FirebaseUser>(
           create: (_) {
             return FirebaseAuth.instance.onAuthStateChanged;
-       },
+          }
+        ),
+        ChangeNotifierProvider(
+          create: (context) => Settings()
         )
       ],
       child:

@@ -4,6 +4,7 @@ from football_data import get_football_data
 from python_settings import settings
 from cloud_firestore import set_matches
 import os
+from datetime import datetime
 
 from conf import settings as my_local_settings
 settings.configure(my_local_settings)
@@ -18,6 +19,7 @@ def prepare_matches(response, competition):
     matches = response['matches']
     result = {}
     for m in matches:
+        m['utcDate'] = datetime.strptime(m['utcDate'], "%Y-%m-%dT%H:%M:%SZ")
         matchId = m.pop('id')
         season = m.pop('season')
         m['season_id'] = season['id']
@@ -40,11 +42,9 @@ matchlist = {}
 
 for c in competitions:
     response=get_football_data('/v2/competitions/%s/matches' % c)
-
     if (response):
         matchlist.update(prepare_matches(response, c))
 
-    
 result = set_matches(matchlist)
 
 

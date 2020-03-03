@@ -14,14 +14,18 @@ abstract class HomePage extends StatelessWidget {
       return Scaffold(
           appBar: AppBar(
             title: Text(user.displayName),
+            actions: buildAppBarActions(context),
+
           ),
           drawer: ErlingDrawer(),
           body: buildBody(context)
+
       );
     }
     return Text("Not signed in");
   }
 
   Widget buildBody(BuildContext context);
+  List<Widget> buildAppBarActions(BuildContext context);
 
 }
