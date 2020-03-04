@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
 
 class Match {
   String homeTeam, awayTeam;
@@ -46,12 +50,13 @@ class MatchWidget extends StatelessWidget {
     fontSize: 24,
   );
 
-  final Match match;
-  MatchWidget(this.match);
+  final DocumentSnapshot matchDoc;
+  MatchWidget(this.matchDoc);
 
   List<List<Widget>> buildScores() {
     List<List<Widget>> result = [];
     bool showHalfTime = true;
+    Match match = Match.fromJson(matchDoc.data);
     List score = match.getPenaltyScore();
     if (score == null) {
       score = match.getExtraTimeScore();
@@ -79,6 +84,30 @@ class MatchWidget extends StatelessWidget {
     return <Widget>[Text(score[0].toString()), Text(score[1].toString())];
   }
 
+  Widget _makeMyBetWidget(BuildContext context){
+    FirebaseUser user = Provider.of(context, listen: false);
+    DocumentReference betRef = matchDoc.reference.collection('bets').document(user.uid);
+    return FutureBuilder(
+        future: betRef.get(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData){
+            DocumentSnapshot bet = snapshot.data;
+            if (bet == null || !bet.exists ) {
+              return RaisedButton(
+                  onPressed: () => betMatch(context, betRef),
+                  child: Text("Ergebnis tippen"));
+            } else {
+              return Text(bet.data.toString());
+            }
+          } else if (snapshot.hasError){
+            return Text(snapshot.error);
+          } else {
+            return Text("...");
+          }
+        }
+    );
+  }
+
   Widget _makeNiceScoreWidget(List score) {
     return Container(
       color: Colors.yellow,
@@ -96,11 +125,12 @@ class MatchWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Row> scoreRows = [];
+    List<Widget> scoreRows = [];
     buildScores().forEach((List<Widget> scoreList) {
       scoreRows.add(Row(children: _makeScoreWidget(scoreList)));
     });
-
+    scoreRows.add(_makeMyBetWidget(context));
+    Match match = Match.fromJson(matchDoc.data);
     return Card(
         margin: EdgeInsets.all(4),
         child: Column(children: <Widget>[
@@ -118,5 +148,13 @@ class MatchWidget extends StatelessWidget {
               ),
               subtitle: Column(children: scoreRows))
         ]));
+  }
+
+  betMatch(BuildContext context, DocumentReference betRef) {
+    Random rand = new Random();
+    Map<String, int> bet = { 'homeTeam' : rand.nextInt(5),
+            'awayTeam' : rand.nextInt(5)
+    };
+    betRef.setData(bet);
   }
 }

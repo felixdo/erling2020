@@ -35,12 +35,17 @@ class Matchlist extends StatefulWidget {
   final CollectionReference matchCollection =
       Firestore.instance.collection('matches');
 
-  Widget _buildMatchItem(context, DocumentSnapshot document) {
-    return MatchWidget(Match.fromJson(document.data));
+  Widget _buildMatchItem(context, DocumentSnapshot matchdoc) {
+    return MatchWidget(matchdoc);
   }
 
   _MatchlistState createState() => _MatchlistState();
+
 }
+
+
+
+
 
 class _MatchlistState extends State<Matchlist> {
   int matchday;
@@ -98,7 +103,7 @@ class _MatchlistState extends State<Matchlist> {
             itemBuilder: (context, index) =>
                 widget._buildMatchItem(context, snapshot.data.documents[index]),
             itemCount: snapshot.data.documents.length,
-            itemExtent: 80.0)));
+            )));
 
     if (competition.showMatchday) {
       result.add(ButtonBar(
