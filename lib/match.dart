@@ -94,8 +94,8 @@ class MatchWidget extends StatelessWidget {
   Widget _makeMyBetWidget(BuildContext context){
     FirebaseUser user = Provider.of(context, listen: false);
     DocumentReference betRef = matchDoc.reference.collection('bets').document(user.uid);
-    return FutureBuilder(
-        future: betRef.get(),
+    return StreamBuilder(
+        stream: betRef.snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData){
             DocumentSnapshot bet = snapshot.data;

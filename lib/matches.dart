@@ -67,15 +67,14 @@ class _MatchlistState extends State<Matchlist> {
     });
   }
 
-  Future<QuerySnapshot> makeSnapshotStream(Competition competition) {
+  Stream<QuerySnapshot> makeSnapshotStream(Competition competition) {
     const int hardCap = 11; // never show more than 11 games
     if (matchday != null) {
       return widget.matchCollection
           .where('matchday', isEqualTo: matchday)
           .where('competition', isEqualTo: competition.key)
           .limit(hardCap)
-          .snapshots()
-          .first;
+          .snapshots();
     } else {
       DateTime now = DateTime.now();
       DateTime lastMidnight = new DateTime(now.year, now.month, now.hour);
@@ -84,8 +83,7 @@ class _MatchlistState extends State<Matchlist> {
           .orderBy('utcDate')
           .where('utcDate', isGreaterThan: Timestamp.fromDate(lastMidnight))
           .limit(hardCap)
-          .snapshots()
-          .first;
+          .snapshots();
     }
   }
 
@@ -135,8 +133,8 @@ class _MatchlistState extends State<Matchlist> {
     } else {
       matchday = null;
     }
-    return FutureBuilder(
-        future: makeSnapshotStream(competition),
+    return StreamBuilder(
+        stream: makeSnapshotStream(competition),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Text("Loading...");
           return Column(
