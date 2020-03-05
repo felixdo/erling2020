@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:math';
 
 class Match {
   String homeTeam, awayTeam;
@@ -99,8 +98,11 @@ class MatchWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData){
             DocumentSnapshot bet = snapshot.data;
-            if (bet == null || !bet.exists ) {
-              return makeBetButton(context, betRef, "Ergebnis Tippen");
+            if (bet == null || !bet.exists) {
+              if (matchDoc.data['status'] == 'SCHEDULED') {
+                return makeBetButton(context, betRef, "Ergebnis Tippen");
+              }
+              return Text("Keinen Tipp abgegeben");
             } else {
               Widget result;
               Widget myBet = Text("Mein Tipp: " + snapshot.data['homeTeam'].toString() + ":" + snapshot.data['awayTeam'].toString());
@@ -203,7 +205,6 @@ class BetFormState extends State<BetForm> {
   int awayScore;
 
   String validateScore(String value){
-    bool valid = false;
     int score = int.tryParse(value);
     if (score == null || score < 0){
       return "Das ist unsinn...";
