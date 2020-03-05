@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
@@ -84,6 +85,12 @@ class MatchWidget extends StatelessWidget {
     return <Widget>[Text(score[0].toString()), Text(score[1].toString())];
   }
 
+  Widget makeBetButton(BuildContext context, DocumentReference betRef, String text){
+    return RaisedButton(
+        onPressed: () => betMatch(context, matchDoc.data['homeTeam']['name'], matchDoc.data['awayTeam']['name'], betRef),
+        child: Text(text));
+  }
+
   Widget _makeMyBetWidget(BuildContext context){
     FirebaseUser user = Provider.of(context, listen: false);
     DocumentReference betRef = matchDoc.reference.collection('bets').document(user.uid);
@@ -93,11 +100,20 @@ class MatchWidget extends StatelessWidget {
           if (snapshot.hasData){
             DocumentSnapshot bet = snapshot.data;
             if (bet == null || !bet.exists ) {
-              return RaisedButton(
-                  onPressed: () => betMatch(context, betRef),
-                  child: Text("Ergebnis tippen"));
+              return makeBetButton(context, betRef, "Ergebnis Tippen");
             } else {
-              return Text(bet.data.toString());
+              Widget result;
+              Widget myBet = Text("Mein Tipp: " + snapshot.data['homeTeam'].toString() + ":" + snapshot.data['awayTeam'].toString());
+              // can we still update the bet?
+              if (matchDoc.data['status'] != 'SCHEDULED'){
+                result = myBet;
+              } else {
+                result = Row(mainAxisAlignment: MainAxisAlignment.center ,children: <Widget>[
+                  myBet,
+                  makeBetButton(context, betRef, "Aendern")
+                ]);
+              }
+              return result;
             }
           } else if (snapshot.hasError){
             return Text(snapshot.error);
@@ -150,11 +166,90 @@ class MatchWidget extends StatelessWidget {
         ]));
   }
 
-  betMatch(BuildContext context, DocumentReference betRef) {
-    Random rand = new Random();
-    Map<String, int> bet = { 'homeTeam' : rand.nextInt(5),
-            'awayTeam' : rand.nextInt(5)
-    };
-    betRef.setData(bet);
+  betMatch(BuildContext context, String home, String away, DocumentReference betRef) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: Text(home + " vs. " + away),
+              content: BetForm(betRef)
+          );
+        });
+  }
+}
+
+// Define a custom Form widget.
+class BetForm extends StatefulWidget {
+
+  final DocumentReference bet;
+  BetForm(this.bet);
+
+  @override
+  BetFormState createState() {
+    return BetFormState();
+  }
+}
+
+// Define a corresponding State class.
+// This class holds data related to the form.
+class BetFormState extends State<BetForm> {
+  // Create a global key that uniquely identifies the Form widget
+  // and allows validation of the form.
+  //
+  // Note: This is a `GlobalKey<FormState>`,
+  // not a GlobalKey<MyCustomFormState>.
+  final _formKey = GlobalKey<FormState>();
+  int homeScore;
+  int awayScore;
+
+  String validateScore(String value){
+    bool valid = false;
+    int score = int.tryParse(value);
+    if (score == null || score < 0){
+      return "Das ist unsinn...";
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Build a Form widget using the _formKey created above.
+    return Form(
+        key: _formKey,
+          child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: TextFormField(
+              onSaved: (value) => homeScore = int.parse(value),
+              keyboardType: TextInputType.number,
+              validator: validateScore,
+           )
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: TextFormField(
+              onSaved: (value) => awayScore = int.parse(value),
+              keyboardType: TextInputType.number,
+              validator: validateScore,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: RaisedButton(
+            child: Text("Submit"),
+            onPressed: () {
+              if (_formKey.currentState.validate()) {
+                _formKey.currentState.save();
+                widget.bet.setData({'homeTeam': homeScore, 'awayTeam': awayScore, 'timestamp': FieldValue.serverTimestamp()});
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+        )
+      ],
+    )
+    );
   }
 }
