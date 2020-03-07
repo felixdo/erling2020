@@ -3,17 +3,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class Match {
   String homeTeam, awayTeam;
   Map<String, dynamic> score;
+  DateTime time;
 
-  Match(this.homeTeam, this.awayTeam, this.score);
+  Match(this.homeTeam, this.awayTeam, this.score, this.time);
 
   Match.fromJson(Map<String, dynamic> json)
       : homeTeam = json['homeTeam']['name'],
         awayTeam = json['awayTeam']['name'],
-        score = json['score'];
+        score = json['score'],
+        time = json['utcDate'].toDate();
 
   String getDuration() {
     return score['duration'];
@@ -86,7 +89,8 @@ class MatchWidget extends StatelessWidget {
 
   Widget makeBetButton(
       BuildContext context, DocumentReference betRef, String text) {
-    return RaisedButton(
+    return FlatButton(
+      color: Colors.lightBlue,
         onPressed: () => betMatch(context, matchDoc.data['homeTeam']['name'],
             matchDoc.data['awayTeam']['name'], betRef),
         child: Text(text));
@@ -138,11 +142,23 @@ class MatchWidget extends StatelessWidget {
       color: Colors.yellow,
       alignment: Alignment.center,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(score == null ? "x" : score[0].toString(),
-              style: scoreTextStyle),
-          Text(":", style: scoreTextStyle),
-          Text(score == null ? "x" : score[1].toString(), style: scoreTextStyle)
+          Text(
+            score == null ? "x" : score[0].toString(),
+            style: scoreTextStyle,
+            textAlign: TextAlign.right,
+          ),
+          Text(
+            ":",
+            style: scoreTextStyle,
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            score == null ? "x" : score[1].toString(),
+            style: scoreTextStyle,
+            textAlign: TextAlign.left,
+          )
         ],
       ),
     );
@@ -157,21 +173,77 @@ class MatchWidget extends StatelessWidget {
     scoreRows.add(_makeMyBetWidget(context));
     Match match = Match.fromJson(matchDoc.data);
     return Card(
+      elevation: 5.0,
         margin: EdgeInsets.all(4),
         child: Column(children: <Widget>[
-          ListTile(
-              title: Row(
+          Text(
+            DateFormat("HH:mm").format(match.time),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ), //create it from here as designed
+          Stack(children: <Widget>[
+            Row(children: <Widget>[
+              Expanded(
+                  flex: 1,
+                  child: Container(
+                      decoration: new BoxDecoration(
+                        image: DecorationImage(
+                            image: new AssetImage('assets/login.jpeg'),
+                            fit: BoxFit.scaleDown,
+                            colorFilter: ColorFilter.mode(
+                                Colors.black.withAlpha(50), BlendMode.dstATop)),
+                        shape: BoxShape.circle,
+                      ),
+                      height: 80)),
+              Expanded(
+                  flex: 1,
+                  child: Container(
+                      decoration: new BoxDecoration(
+                        image: DecorationImage(
+                            image: new AssetImage('assets/login.jpeg'),
+                            fit: BoxFit.scaleDown,
+                            colorFilter: ColorFilter.mode(
+                                Colors.black.withAlpha(50), BlendMode.dstATop)),
+                        shape: BoxShape.circle,
+                      ),
+                      height: 80)),
+            ]),
+            Column(children: <Widget>[
+              Row(
                 children: <Widget>[
-                  Expanded(flex: 4, child: Text(match.homeTeam)),
+                  Expanded(
+                      flex: 4,
+                      child: Text(match.homeTeam,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18))),
                   Expanded(
                       flex: 2,
-                      child: Row(children: <Widget>[
-                        _makeNiceScoreWidget(match.getFullTimeScore())
-                      ])),
-                  Expanded(flex: 4, child: Text(match.awayTeam))
+                      child: _makeNiceScoreWidget(match.getFullTimeScore())),
+                  Expanded(
+                      flex: 4,
+                      child: Text(match.awayTeam,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18))),
                 ],
               ),
-              subtitle: Column(children: scoreRows))
+              Row(
+                children: <Widget>[
+                  Expanded(flex: 4, child: Text("")),
+                  Expanded(
+                      flex: 2,
+                      child: _makeNiceScoreWidget(match.getHalfTimeScore())),
+                  Expanded(flex: 4, child: Text("")),
+                ],
+              )
+            ]),
+          ]),
+          Row(
+            children: <Widget>[
+              _makeMyBetWidget(context)
+            ],
+          )
         ]));
   }
 
