@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import 'home.dart';
 import 'model.dart';
@@ -40,12 +41,7 @@ class Matchlist extends StatefulWidget {
   }
 
   _MatchlistState createState() => _MatchlistState();
-
 }
-
-
-
-
 
 class _MatchlistState extends State<Matchlist> {
   int matchday;
@@ -95,13 +91,28 @@ class _MatchlistState extends State<Matchlist> {
     if (competition.showMatchday) {
       result.add(Text(matchday.toString() + ". Spieltag"));
     }
-
+    Set<Timestamp> matchDates = new Set();
     result.add(Expanded(
         child: ListView.builder(
-            itemBuilder: (context, index) =>
-                widget._buildMatchItem(context, snapshot.data.documents[index]),
-            itemCount: snapshot.data.documents.length,
-            )));
+      itemBuilder: (context, index) {
+        List<Widget> group = [];
+        Timestamp dt = snapshot.data.documents[index]['utcDate'];
+        if (!matchDates.contains(dt)) {
+          matchDates.add(dt);
+          group.add(Text(DateFormat("dd.MM.yyyy - HH:mm").format(dt.toDate()),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 30,
+                  color: Colors.deepPurple),
+                  textAlign: TextAlign.center));
+        }
+        group.add(
+            widget._buildMatchItem(context, snapshot.data.documents[index]));
+
+        return Column(children: group);
+      },
+      itemCount: snapshot.data.documents.length + matchDates.length,
+    )));
 
     if (competition.showMatchday) {
       result.add(ButtonBar(
@@ -126,8 +137,8 @@ class _MatchlistState extends State<Matchlist> {
   Widget build(BuildContext context) {
     Settings settings = Provider.of(context);
     Competition competition = settings.competition;
-    if (competition.showMatchday){
-      if (matchday == null){
+    if (competition.showMatchday) {
+      if (matchday == null) {
         matchday = competition.currentMatchday;
       }
     } else {

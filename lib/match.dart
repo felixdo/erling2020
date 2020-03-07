@@ -84,19 +84,22 @@ class MatchWidget extends StatelessWidget {
     return <Widget>[Text(score[0].toString()), Text(score[1].toString())];
   }
 
-  Widget makeBetButton(BuildContext context, DocumentReference betRef, String text){
+  Widget makeBetButton(
+      BuildContext context, DocumentReference betRef, String text) {
     return RaisedButton(
-        onPressed: () => betMatch(context, matchDoc.data['homeTeam']['name'], matchDoc.data['awayTeam']['name'], betRef),
+        onPressed: () => betMatch(context, matchDoc.data['homeTeam']['name'],
+            matchDoc.data['awayTeam']['name'], betRef),
         child: Text(text));
   }
 
-  Widget _makeMyBetWidget(BuildContext context){
+  Widget _makeMyBetWidget(BuildContext context) {
     FirebaseUser user = Provider.of(context, listen: false);
-    DocumentReference betRef = matchDoc.reference.collection('bets').document(user.uid);
+    DocumentReference betRef =
+        matchDoc.reference.collection('bets').document(user.uid);
     return StreamBuilder(
         stream: betRef.snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasData){
+          if (snapshot.hasData) {
             DocumentSnapshot bet = snapshot.data;
             if (bet == null || !bet.exists) {
               if (matchDoc.data['status'] == 'SCHEDULED') {
@@ -105,25 +108,29 @@ class MatchWidget extends StatelessWidget {
               return Text("Keinen Tipp abgegeben");
             } else {
               Widget result;
-              Widget myBet = Text("Mein Tipp: " + snapshot.data['homeTeam'].toString() + ":" + snapshot.data['awayTeam'].toString());
+              Widget myBet = Text("Mein Tipp: " +
+                  snapshot.data['homeTeam'].toString() +
+                  ":" +
+                  snapshot.data['awayTeam'].toString());
               // can we still update the bet?
-              if (matchDoc.data['status'] != 'SCHEDULED'){
+              if (matchDoc.data['status'] != 'SCHEDULED') {
                 result = myBet;
               } else {
-                result = Row(mainAxisAlignment: MainAxisAlignment.center ,children: <Widget>[
-                  myBet,
-                  makeBetButton(context, betRef, "Aendern")
-                ]);
+                result = Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      myBet,
+                      makeBetButton(context, betRef, "Aendern")
+                    ]);
               }
               return result;
             }
-          } else if (snapshot.hasError){
+          } else if (snapshot.hasError) {
             return Text(snapshot.error);
           } else {
             return Text("...");
           }
-        }
-    );
+        });
   }
 
   Widget _makeNiceScoreWidget(List score) {
@@ -168,21 +175,19 @@ class MatchWidget extends StatelessWidget {
         ]));
   }
 
-  betMatch(BuildContext context, String home, String away, DocumentReference betRef) {
+  betMatch(BuildContext context, String home, String away,
+      DocumentReference betRef) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-              title: Text(home + " vs. " + away),
-              content: BetForm(betRef)
-          );
+              title: Text(home + " vs. " + away), content: BetForm(betRef));
         });
   }
 }
 
 // Define a custom Form widget.
 class BetForm extends StatefulWidget {
-
   final DocumentReference bet;
   BetForm(this.bet);
 
@@ -204,9 +209,9 @@ class BetFormState extends State<BetForm> {
   int homeScore;
   int awayScore;
 
-  String validateScore(String value){
+  String validateScore(String value) {
     int score = int.tryParse(value);
-    if (score == null || score < 0){
+    if (score == null || score < 0) {
       return "Das ist unsinn...";
     }
     return null;
@@ -217,40 +222,42 @@ class BetFormState extends State<BetForm> {
     // Build a Form widget using the _formKey created above.
     return Form(
         key: _formKey,
-          child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: TextFormField(
-              onSaved: (value) => homeScore = int.parse(value),
-              keyboardType: TextInputType.number,
-              validator: validateScore,
-           )
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: TextFormField(
-              onSaved: (value) => awayScore = int.parse(value),
-              keyboardType: TextInputType.number,
-              validator: validateScore,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RaisedButton(
-            child: Text("Submit"),
-            onPressed: () {
-              if (_formKey.currentState.validate()) {
-                _formKey.currentState.save();
-                widget.bet.setData({'homeTeam': homeScore, 'awayTeam': awayScore, 'timestamp': FieldValue.serverTimestamp()});
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-        )
-      ],
-    )
-    );
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+                padding: EdgeInsets.all(8.0),
+                child: TextFormField(
+                  onSaved: (value) => homeScore = int.parse(value),
+                  keyboardType: TextInputType.number,
+                  validator: validateScore,
+                )),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: TextFormField(
+                onSaved: (value) => awayScore = int.parse(value),
+                keyboardType: TextInputType.number,
+                validator: validateScore,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RaisedButton(
+                child: Text("Submit"),
+                onPressed: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    widget.bet.setData({
+                      'homeTeam': homeScore,
+                      'awayTeam': awayScore,
+                      'timestamp': FieldValue.serverTimestamp()
+                    });
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            )
+          ],
+        ));
   }
 }
