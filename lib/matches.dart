@@ -69,6 +69,7 @@ class _MatchlistState extends State<Matchlist> {
       return widget.matchCollection
           .where('matchday', isEqualTo: matchday)
           .where('competition', isEqualTo: competition.key)
+          .orderBy('utcDate')
           .limit(hardCap)
           .snapshots();
     } else {
